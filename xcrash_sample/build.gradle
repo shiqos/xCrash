@@ -34,7 +34,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
-//    implementation 'com.iqiyi.xcrash:xcrash-android-lib:3.1.0'
+
+//    implementation 'io.github.shiqos:xcrash-android-lib:3.1.1'
     implementation project(':xcrash_lib')
 }
 

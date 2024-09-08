@@ -715,6 +715,7 @@ public final class XCrash {
         /**
          * Set native library path
          * @param nativeLibPath native library path
+         * @return The InitParameters object.
          */
         public InitParameters setNativeLibPath(String nativeLibPath) {
             this.nativeLibPath = nativeLibPath;
@@ -724,6 +725,7 @@ public final class XCrash {
         /**
          * Set whether load native library with linker
          * @param loadNativeWithLinker load native library with linker
+         * @return The InitParameters object.
          */
         public InitParameters setLoadNativeWithLinker(boolean loadNativeWithLinker) {
             this.loadNativeWithLinker = loadNativeWithLinker;

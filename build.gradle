@@ -5,14 +5,14 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:7.2.1'
     }
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
-//      mavenLocal()
         mavenCentral()
         maven {url "https://s01.oss.sonatype.org/content/groups/public"}
         maven {url "https://s01.oss.sonatype.org/content/repositories/releases"}
@@ -34,7 +34,7 @@ ext {
     abiFilters = "armeabi-v7a,arm64-v8a,x86,x86_64"
     useASAN = false
 
-    POM_GROUP_ID = "com.iqiyi.xcrash"
+    POM_GROUP_ID = "io.github.shiqos"
     POM_ARTIFACT_ID = "xcrash-android-lib"
     POM_VERSION_NAME = "3.1.1"
 

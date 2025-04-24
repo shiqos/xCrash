@@ -30,12 +30,16 @@ import android.system.Os;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,8 +49,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 class Util {
 
@@ -554,6 +562,86 @@ class Util {
         return mobileModel;
     }
 
+    public static long getCrc32( File file ) {
+        try {
+            CRC32 crc32 = new CRC32();
+            FileInputStream fileStream = new FileInputStream(file);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = fileStream.read(buffer)) != -1) {
+                crc32.update(buffer, 0, length);
+            }
+            fileStream.close();
+            return crc32.getValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    public static long unzipOneFile(String filePath, String soName, File outputFile) {
+        long crc32 = 0L;
+        try {
+            ZipFile zipFile = new ZipFile(filePath);
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                String entryName = entry.getName();
+                if(entryName.startsWith("..") || entryName.startsWith(".")){
+                    continue;
+                }
+                if (entryName.length() < 4 || !entryName.endsWith(".so") || !entryName.startsWith("lib/")) {
+                    continue;
+                }
+                int lastSlash = entryName.lastIndexOf('/');
+                if (lastSlash < 0 || !entryName.regionMatches(lastSlash + 1, "lib", 0, 3)) {
+                    continue;
+                }
+
+                String libFileName = entryName.substring(lastSlash + 1);
+                if (soName.equals(libFileName) && entry.getMethod() == ZipEntry.STORED) {
+                    crc32 = entry.getCrc();
+
+                    if (outputFile != null) {
+                        outputFile.createNewFile();
+                        outputFile.setExecutable(true);
+
+                        InputStream inputStream = null;
+                        try {
+                            inputStream = zipFile.getInputStream(entry);
+                            BufferedOutputStream output = null;
+                            try {
+                                output = new BufferedOutputStream(new FileOutputStream(outputFile));
+                                BufferedInputStream input = new BufferedInputStream(inputStream);
+                                byte b[] = new byte[8192];
+                                int n;
+                                while ((n = input.read(b, 0, 8192)) >= 0) {
+                                    output.write(b, 0, n);
+                                }
+                            } finally {
+                                if (output != null) {
+                                    output.close();
+                                }
+                            }
+                        } finally {
+                            if (inputStream != null) {
+                                inputStream.close();
+                            }
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            zipFile.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return crc32;
+    }
 
     public static class Rom {
         private static final String TAG = "Rom";

@@ -123,6 +123,23 @@ class NativeHandler {
             useLinker = abiPath.second;
         }
 
+        if (useLinker && Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 28) {
+            useLinker = false;
+            nativeLibraryDir = "/data/data/" + ctx.getPackageName();
+            String soName = System.mapLibraryName(AbiPathProvider.XCRASH_DUMPER_LIB_NAME);
+            File xcrashDumperFile = new File(nativeLibraryDir, soName);
+
+            String apkPath = ctx.getPackageCodePath();
+            boolean checkPass = false;
+            if (xcrashDumperFile.exists()) {
+                checkPass = Util.getCrc32(xcrashDumperFile) == Util.unzipOneFile(apkPath, soName, null);
+            }
+
+            if (!checkPass) {
+                Util.unzipOneFile(apkPath, soName, xcrashDumperFile);
+            }
+        }
+
         //init native lib
         try {
             int r = nativeInit(
